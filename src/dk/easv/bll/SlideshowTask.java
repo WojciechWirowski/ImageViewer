@@ -1,4 +1,4 @@
-package dk.easv;
+package dk.easv.bll;
 
 import javafx.concurrent.Task;
 
@@ -24,7 +24,7 @@ public class SlideshowTask extends Task {
     protected Object call() throws Exception {
         int i = startIndex;
         while(true) {
-            if(isCancelled()) return 0;
+            if(isCancelled()) return null;
 
             updateValue(i);
             Thread.sleep(time*1000);

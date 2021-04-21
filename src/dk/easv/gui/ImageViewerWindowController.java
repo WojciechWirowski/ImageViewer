@@ -1,4 +1,4 @@
-package dk.easv;
+package dk.easv.gui;
 
 import java.io.File;
 import java.net.URL;
@@ -7,7 +7,11 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
+import dk.easv.bll.CallablePixelCounter;
+import dk.easv.be.PixelPhoto;
+import dk.easv.bll.SlideshowTask;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -25,6 +29,10 @@ import javafx.stage.Stage;
 public class ImageViewerWindowController implements Initializable
 {
     private final List<Image> images = new ArrayList<>();
+    @FXML private Label redLbl;
+    @FXML private Label blueLbl;
+    @FXML private Label greenLbl;
+    @FXML private Label mixedLbl;
 
     @FXML private Label lblImageName;
     @FXML private Button btnLoad;
@@ -140,7 +148,27 @@ public class ImageViewerWindowController implements Initializable
     private void displayImage() {
         if (!images.isEmpty()) {
             imageView.setImage(images.get(currentImageIndex));
+            lblImageName.setText(images.get(currentImageIndex).getUrl());
+            pixelCount();
         }
+    }
+
+    private void pixelCount() {
+        CallablePixelCounter pixelCounter = new CallablePixelCounter(images.get(currentImageIndex));
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Future<PixelPhoto> future = executorService.submit(pixelCounter);
+
+        try {
+            PixelPhoto photo = future.get();
+            redLbl.setText("Red: " + photo.getRed());
+            blueLbl.setText("Blue: " + photo.getBlue());
+            greenLbl.setText("Green " + photo.getGreen());
+            mixedLbl.setText("Mixed: " + photo.getMixed());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        executorService.shutdown();
     }
 
     private void fillTimeOptions() {
